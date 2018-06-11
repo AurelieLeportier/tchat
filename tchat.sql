@@ -21,8 +21,8 @@ SET time_zone = "+00:00";
 --
 -- Base de données :  `tchat`
 --
-CREATE DATABASE IF NOT EXISTS `tchat_test` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-USE `tchat_test`;
+CREATE DATABASE IF NOT EXISTS `tchat` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+USE `tchat`;
 
 -- --------------------------------------------------------
 
