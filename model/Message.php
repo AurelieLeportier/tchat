@@ -15,20 +15,60 @@ class Message extends Manager
     private $content;
     private $dateSend;
 
+    public function __construct()
+    {
+        //Nombre d'arguments passé
+        $ctp = func_num_args();
+        //Récupération des arguments sous forme de tableau
+        $args = func_get_args();
+
+        switch($ctp){
+            case 1:
+                $this->construct1($args[0]);
+                break;
+            case 2:
+                $this->construct2($args[0],$args[1]);
+                break;
+            case 3:
+                $this->construct3($args[0],$args[1],$args[2]);
+                break;
+             default:
+                break;
+        }
+    }
+
     /**
-     * Constructeur de la classe
+     * Constructeur de la classe avec 1 argument
+     * @param int $sender
+     */
+    private function construct1($sender)
+    {
+        $this->sender = $sender;
+    }
+
+    /**
+     * Constructeur de la classe avec 2 arguments
+     * @param int $sender
+     * @param int $receiver
+     */
+    private function construct2($sender, $receiver)
+    {
+        $this->sender = $sender;
+        $this->receiver = $receiver;
+    }
+
+    /**
+     * Constructeur de la classe avec 3 arguments
      * @param int      $sender
      * @param int      $receiver
      * @param string   $content
-     * @param DateTime $dateSend
      */
-    /*public function __construct($sender, $receiver, $content, $dateSend)
+    private function construct3($sender, $receiver, $content)
     {
         $this->sender = $sender;
         $this->receiver = $receiver;
         $this->content = $content;
-        $this->dateSend = $dateSend;
-    }*/
+    }
 
     /**
      * Retourne l'id
@@ -77,28 +117,24 @@ class Message extends Manager
 
     /**
      * Enregistrement d'un message envoyé
-     * @param  int    $idSender
-     * @param  int    $idReceiver
-     * @param  string $content
      * @return PDO query
      */
-    public function sendMessage($idSender, $idReceiver, $content)
+    public function sendMessage()
     {
-        $db = $this->dbConnect();
+        $db = parent::dbConnect();
         $query = $db->prepare('INSERT INTO message(sender, receiver, content, date_send) VALUES(?, ?, ?, NOW())');
-        $query->execute(array($idSender, $idReceiver, $content));
+        $query->execute(array($this->sender, $this->receiver, $this->content));
 
         return $query;
     }
 
     /**
      * Retourne la liste des logins avec qui l'user a eu une conversation
-     * @param  int $idSender
      * @return PDO query
      */
-    public function getListConversation($idSender)
+    public function getListConversation()
     {
-        $db = $this->dbConnect();
+        $db = parent::dbConnect();
         $query = $db->prepare('SELECT DISTINCT u.id, u.login
                                FROM user u INNER JOIN message m ON u.id = m.sender
                                WHERE m.sender = :sender
@@ -108,22 +144,20 @@ class Message extends Manager
                                FROM user u INNER JOIN message m ON u.id = m.receiver
                                WHERE m.receiver = :sender
                                OR m.sender = :sender;');
-        $query->execute(array("sender" => $idSender));
+        $query->execute(array("sender" => $this->sender));
 
         return $query;
     }
 
     /**
      * Retourne la conversation entre 2 utilisateurs
-     * @param  int $idSender
-     * @param  int $idReceiver
      * @return PDO query
      */
-    public function getConversation($idSender, $idReceiver)
+    public function getConversation()
     {
-        $db = $this->dbConnect();
+        $db = parent::dbConnect();
         $query = $db->prepare('SELECT *, DATE_FORMAT(date_send, \'%d/%m/%Y à %Hh%imin%ss\') AS date_send_fr FROM message WHERE sender = ? AND receiver = ? OR sender = ? AND receiver = ? ORDER BY date_send ASC;');
-        $query->execute(array($idSender, $idReceiver, $idReceiver, $idSender));
+        $query->execute(array($this->sender, $this->receiver, $this->receiver, $this->sender));
 
         return $query;
     }

@@ -20,12 +20,12 @@ function index()
  */
 function connexion()
 {
-    $user = new \Tchat\Model\User();
-    $exist = $user->getUser($_POST['login'], $_POST['pass']);
+    $user = new \Tchat\Model\User($_POST['login'], $_POST['pass']);
+    $exist = $user->getUser();
     if ($exist !== false) {
         $_SESSION['idSender'] = $exist['id'];
         $_SESSION['login'] = $exist['login'];
-        $user->setOnline($exist['id'], 1);
+        $user->setOnline(1);
         header('Location: index.php?action=listMessages');
     } else {
         throw new Exception('Identifiants incorect !');
@@ -38,8 +38,8 @@ function connexion()
  */
 function deconnexion()
 {
-    $user = new \Tchat\Model\User();
-    $user->setOnline($_SESSION['idSender'], false);
+    $user = new \Tchat\Model\User($_SESSION['idSender']);
+    $user->setOnline(0);
     session_destroy();
     header('Location: index.php');
 }
@@ -52,13 +52,13 @@ function deconnexion()
  */
 function createAccount($login, $pass)
 {
-    $user = new \Tchat\Model\User();
-    $exist = $user->getUser($login, $pass);
+    $user = new \Tchat\Model\User($login, $pass);
+    $exist = $user->checkLogin();
 
     if ($exist !== false) {
         throw new Exception('Le login est déjà utilisé !');
     } else {
-        $retourCreate = $user->createUser($login, $pass);
+        $retourCreate = $user->createUser();
         if ($retourCreate === false) {
             throw new Exception('Impossible de créer l\'utilisateur !');
         } else {
@@ -76,10 +76,10 @@ function createAccount($login, $pass)
  */
 function listMessages()
 {
-    $message = new \Tchat\Model\Message();
-    $conversations = $message->getListConversation($_SESSION['idSender']);
-    $user = new \Tchat\Model\User();
-    $isOnline = $user->getIsOnline($_SESSION['idSender']);
+    $message = new \Tchat\Model\Message($_SESSION['idSender']);
+    $conversations = $message->getListConversation();
+    $user = new \Tchat\Model\User($_SESSION['idSender']);
+    $isOnline = $user->getIsOnline();
     require('view/listMessagesView.php');
 }
 
@@ -88,8 +88,8 @@ function listMessages()
  */
 function newConversation()
 {
-    $user = new \Tchat\Model\User();
-    $isOnline = $user->getIsOnline($_SESSION['idSender']);
+    $user = new \Tchat\Model\User($_SESSION['idSender']);
+    $isOnline = $user->getIsOnline();
     require('view/newConversationView.php');
 }
 
@@ -101,8 +101,8 @@ function newConversation()
  */
 function ajaxLogin($input)
 {
-    $user = new \Tchat\Model\User();
-    $logins = $user->getLogins($_SESSION['idSender'], $input);
+    $user = new \Tchat\Model\User($_SESSION['idSender']);
+    $logins = $user->getLogins($input);
     $allLogins = array();
     while ($login = $logins->fetch()) {
         $allLogins[] = $login['login'];
@@ -118,13 +118,13 @@ function ajaxLogin($input)
  */
 function conversation($loginReceiver)
 {
-    $user = new \Tchat\Model\User();
-    $exist = $user->checkLogin($loginReceiver);
+    $user = new \Tchat\Model\User($loginReceiver, null);
+    $exist = $user->checkLogin();
     if ($exist !== false) {
         $contact['login'] = $loginReceiver;
         $contact['id'] = $exist['id'];
-        $message = new \Tchat\Model\Message();
-        $messages = $message->getConversation($_SESSION['idSender'], $contact['id']);
+        $message = new \Tchat\Model\Message($_SESSION['idSender'], $contact['id']);
+        $messages = $message->getConversation();
         require('view/messageView.php');
     } else {
         throw new Exception('Le login saisi est inconnu!');
@@ -140,20 +140,19 @@ function conversation($loginReceiver)
  */
 function sendMessage($sender, $receiver, $content)
 {
-    $message = new \Tchat\Model\Message();
-
     //On enlève les sauts de ligne
     $content=str_replace("\n", " ", $content);
     $content=str_replace("\r\n", " ", $content);
     $content=str_replace("\r", " ", $content);
     
-    $addMess = $message->sendMessage($sender, $receiver, htmlentities(addslashes($content)));
+    $message = new \Tchat\Model\Message($sender, $receiver, htmlentities(addslashes($content)));
+    $addMess = $message->sendMessage();
 
     if ($addMess === false) {
         throw new Exception('Impossible d\'envoyer le message !');
     } else {
-        $user = new \Tchat\Model\User();
-        $login = $user->getLoginWithId($receiver);
+        $user = new \Tchat\Model\User($receiver);
+        $login = $user->getLoginWithId();
         conversation($login['login']);
     }
 }
