@@ -15,6 +15,14 @@ function index()
 }
 
 /**
+ * Affiche 404
+ */
+function notFound()
+{
+    require('view/notFoundView.php');
+}
+
+/**
  * Vérification login/mdp saisies
  * @return redirection/Exception
  */

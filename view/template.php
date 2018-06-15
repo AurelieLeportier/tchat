@@ -11,7 +11,7 @@
     <body>
         <div class="content">
             <?php
-                if (isset($_GET['action'])) {
+                if (isset($_GET['action']) && count($_SESSION) > 0) {
                     if ($_GET['action'] == "listMessages" || $_GET['action'] == "newConversation") {
             ?>
                         <div class="col left">

@@ -107,7 +107,7 @@ class User extends Manager
         $req->execute(array($this->login, hash("sha512", $this->password)));
         $user = $req->fetch();
         if ($user !== false) {
-            //Sauvegarde des infos retournées
+            //Récupération des infos retournées
             $this->id = $user['id'];
             $this->login = $user['login'];
         }

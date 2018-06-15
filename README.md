@@ -1,3 +1,6 @@
+Tchat
+=====
+
 /***** Infos ******/
 
 Cette mini appli a été développé sur un serveur Apache avec MySQL et PHP5.6.
@@ -10,12 +13,12 @@ Dans une base MySQL :
 
 Infos de connexions à la BDD dans le programme :
 - se rendre dans le dossier tchat/model
-- éditer le fichier Manager.php avec vos informations de connexion
+- éditer la fonction dbConnect() dans le fichier Manager.php avec vos informations de connexion
 
 
 /***** Accès *****/
 
-URL : localhost/index.php
+URL : localhost/tchat/index.php
 
 
 /**** Let's go ****/

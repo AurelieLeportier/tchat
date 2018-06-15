@@ -10,59 +10,72 @@ require('controller/controller.php');
 
 try {
     if (isset($_GET['action'])) {
-        switch ($_GET['action']) {
-            //Fonction connexion
-            case 'connexion':
-                connexion();
-                break;
-            //Fonction déconnexion    
-            case 'deconnexion':
-                deconnexion();
-                break;
-            //Fonction de création d'un compte
-            case 'createAccount':
-                if (!empty($_POST['login']) && !empty($_POST['pass'])) {
-                    createAccount($_POST['login'], $_POST['pass']);
-                } else {
-                    throw new Exception('Veuillez saisir un login ET un mot de passe.');
-                }
-                break;
-            //Affichage des messages
-            case 'listMessages':
-                listMessages();
-                break;
-            //Affichage d'une nouvelle conversation
-            case 'newConversation':
-                newConversation();
-                break;
-            //Récupération de tous les logins pour l'autocompletion
-            case 'getLogins':
-                ajaxLogin($_POST['input']);
-                break;
-            //Recherche d'une conversation
-            case 'searchContact':
-                if ((isset($_SESSION['idSender']) && $_SESSION['idSender'] > 0) && (isset($_POST['loginReceiver']) || isset($_GET['loginReceiver']))) {
-                    $loginReceiver = (isset($_POST['loginReceiver'])) ? $_POST['loginReceiver'] : $_GET['loginReceiver'];
-                    conversation($loginReceiver);
-                } else {
-                    throw new Exception('Aucune conversation trouvée.');
-                }
-                break;
-            //Envoie d'un message
-            case 'sendMessage':
-                if ((isset($_SESSION['idSender']) && $_SESSION['idSender'] > 0) && (isset($_POST['idReceiver']) && $_POST['idReceiver'] > 0)) {
-                    if (!empty($_POST['newMessage'])) {
-                        sendMessage($_SESSION['idSender'], $_POST['idReceiver'], $_POST['newMessage']);
+        if ($_GET['action'] == 'connexion' || $_GET['action'] == 'deconnexion') {
+            switch ($_GET['action']) {
+                //Fonction connexion
+                case 'connexion':
+                    if (!empty($_POST['login']) && !empty($_POST['pass'])) {
+                        connexion();
                     } else {
-                        throw new Exception('Vous n\'avez pas saisie de message à envoyer !');
+                        throw new Exception('Veuillez saisir un login ET un mot de passe.');
                     }
-                } else {
-                    throw new Exception('Aucune conversation trouvée.');
+                    break;
+                //Fonction déconnexion    
+                case 'deconnexion':
+                    deconnexion();
+                    break;
+            }
+        } else {
+            if (isset($_SESSION['idSender'])) {
+                switch ($_GET['action']) {
+                    //Fonction de création d'un compte
+                    case 'createAccount':
+                        if (!empty($_POST['login']) && !empty($_POST['pass'])) {
+                            createAccount($_POST['login'], $_POST['pass']);
+                        } else {
+                            throw new Exception('Veuillez saisir un login ET un mot de passe.');
+                        }
+                        break;
+                    //Affichage des messages
+                    case 'listMessages':
+                        listMessages();
+                        break;
+                    //Affichage d'une nouvelle conversation
+                    case 'newConversation':
+                        newConversation();
+                        break;
+                    //Récupération de tous les logins pour l'autocompletion
+                    case 'getLogins':
+                        ajaxLogin($_POST['input']);
+                        break;
+                    //Recherche d'une conversation
+                    case 'searchContact':
+                        if (isset($_POST['loginReceiver']) || isset($_GET['loginReceiver'])) {
+                            $loginReceiver = (isset($_POST['loginReceiver'])) ? $_POST['loginReceiver'] : $_GET['loginReceiver'];
+                            conversation($loginReceiver);
+                        } else {
+                            throw new Exception('Aucune conversation trouvée.');
+                        }
+                        break;
+                    //Envoie d'un message
+                    case 'sendMessage':
+                        if (isset($_POST['idReceiver']) && $_POST['idReceiver'] > 0) {
+                            if (!empty($_POST['newMessage'])) {
+                                sendMessage($_SESSION['idSender'], $_POST['idReceiver'], $_POST['newMessage']);
+                            } else {
+                                throw new Exception('Vous n\'avez pas saisie de message à envoyer !');
+                            }
+                        } else {
+                            throw new Exception('Aucune conversation trouvée.');
+                        }
+                        break;
+                    //Par défaut on affiche une 404
+                    default:
+                        notFound();
                 }
-                break;
-            //Par défaut on affiche la page d'accueil
-            default:
+            } else {
                 index();
+            }
         }
     } else {
         index();
